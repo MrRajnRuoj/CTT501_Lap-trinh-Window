@@ -178,7 +178,7 @@ void createWindow(HINSTANCE hInstance, int nCmdShow, int windowClass) {
 	WCHAR title[50];
 	HWND hWnd;
 
-	wsprintf(title, L"Class %d - Window %d", windowClass, nOpenningWindow[windowClass]);
+	wsprintf(title, L"Class %d - Window %d", windowClass, nOpenningWindow[windowClass - 1] + 1);
 	if (windowClass == 1) {
 		hWnd = CreateWindowW(szWindowClass1, title, WS_OVERLAPPEDWINDOW, 200, 200, 500, 500, nullptr, nullptr, hInstance, nullptr);
 	}
@@ -192,7 +192,7 @@ void createWindow(HINSTANCE hInstance, int nCmdShow, int windowClass) {
 	if (!hWnd) {
 		return;
 	}
-	++nOpenningWindow[windowClass];
+	++nOpenningWindow[windowClass - 1];
 	ShowWindow(hWnd, nCmdShow);
 }
 
