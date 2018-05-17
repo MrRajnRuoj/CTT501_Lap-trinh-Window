@@ -10,6 +10,7 @@
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
+int curSelectMenuItem;
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -115,38 +116,66 @@ void addCheckBox(HWND hWnd, int itemID) {
 	HMENU hMenu = GetMenu(hWnd);
 	int flag;
 
-	if (GetMenuState(hMenu, itemID, MF_BYCOMMAND) & MF_CHECKED)
-		flag = MF_UNCHECKED;
-	else
-		flag = MF_CHECKED;
-	CheckMenuItem(hMenu, itemID, flag);
+	if (curSelectMenuItem > 0)
+		CheckMenuItem(hMenu, curSelectMenuItem, MF_UNCHECKED | MF_BYCOMMAND);
+	CheckMenuItem(hMenu, itemID, MF_CHECKED | MF_BYCOMMAND);
+	curSelectMenuItem = itemID;
 }
 
-void changeMenuBar(HWND hWnd, bool &isChangeMenu) {
+void changeMenuBar(HWND hWnd, bool &isChangeMenu, HMENU menuPopupDraw, HMENU menuPopupEdit) {
 	HMENU hMenu = GetMenu(hWnd);
 
 	if (isChangeMenu) {
+		RemoveMenu(hMenu, 1, MF_BYPOSITION);
+		InsertMenu(hMenu, 1, MF_POPUP | MF_BYPOSITION, (UINT)menuPopupEdit, L"Edit");
 		EnableMenuItem(hMenu, ID_FILE_OPEN, MF_GRAYED);
 		EnableMenuItem(hMenu, ID_FILE_SAVE, MF_GRAYED);
 		EnableMenuItem(hMenu, ID_FILE_SAVE_AS, MF_GRAYED);
-		EnableMenuItem(hMenu, ID_DRAW_ELLIPSE, MF_GRAYED);
-		EnableMenuItem(hMenu, ID_DRAW_LINE, MF_GRAYED);
-		EnableMenuItem(hMenu, ID_DRAW_RECTANGLE, MF_GRAYED);
-		EnableMenuItem(hMenu, ID_DRAW_PIXEL, MF_GRAYED);
-		EnableMenuItem(hMenu, ID_DRAW_FORMAT_BRUSH, MF_GRAYED);
-		EnableMenuItem(hMenu, ID_DRAW_FORMAT_COLOR, MF_GRAYED);
+		EnableMenuItem(hMenu, ID_EDIT_CUT, MF_GRAYED);
+		EnableMenuItem(hMenu, ID_EDIT_COPY, MF_GRAYED);
+		EnableMenuItem(hMenu, ID_EDIT_PASTE, MF_GRAYED);
+		EnableMenuItem(hMenu, ID_EDIT_SELECT_ALL, MF_GRAYED);
+		EnableMenuItem(hMenu, ID_EDIT_FORMAT_COLOR, MF_GRAYED);
+		EnableMenuItem(hMenu, ID_EDIT_FORMAT_FONT, MF_GRAYED);
 	}
 	else {
-		EnableMenuItem(hMenu, ID_FILE_OPEN, MF_ENABLED);
-		EnableMenuItem(hMenu, ID_FILE_SAVE, MF_ENABLED);
-		EnableMenuItem(hMenu, ID_FILE_SAVE_AS, MF_ENABLED);
-		EnableMenuItem(hMenu, ID_DRAW_ELLIPSE, MF_ENABLED);
-		EnableMenuItem(hMenu, ID_DRAW_LINE, MF_ENABLED);
-		EnableMenuItem(hMenu, ID_DRAW_RECTANGLE, MF_ENABLED);
-		EnableMenuItem(hMenu, ID_DRAW_PIXEL, MF_ENABLED);
-		EnableMenuItem(hMenu, ID_DRAW_FORMAT_BRUSH, MF_ENABLED);
-		EnableMenuItem(hMenu, ID_DRAW_FORMAT_COLOR, MF_ENABLED);
+		RemoveMenu(hMenu, 1, MF_BYPOSITION);
+		InsertMenu(hMenu, 1, MF_POPUP | MF_BYPOSITION, (UINT)menuPopupDraw, L"Draw");
 	}
+	DrawMenuBar(hWnd);
+}
+
+void createMenuPopupDraw(HWND hWnd, HMENU& menuPopupDraw) {
+	HMENU hMenu = GetMenu(hWnd);
+	HMENU menuPopupDrawFormat;
+
+	menuPopupDraw = CreateMenu();
+	AppendMenu(menuPopupDraw, MF_STRING, ID_DRAW_PIXEL, L"&Pixel");
+	AppendMenu(menuPopupDraw, MF_STRING, ID_DRAW_RECTANGLE, L"&Rectangle");
+	AppendMenu(menuPopupDraw, MF_STRING, ID_DRAW_ELLIPSE, L"&Ellipse");
+	AppendMenu(menuPopupDraw, MF_STRING, ID_DRAW_LINE, L"&Line");
+	
+	menuPopupDrawFormat = CreateMenu();
+	AppendMenu(menuPopupDrawFormat, MF_STRING, ID_DRAW_FORMAT_BRUSH, L"Choose &Color...");
+	AppendMenu(menuPopupDrawFormat, MF_STRING, ID_DRAW_FORMAT_COLOR, L"Choose &Brush...");
+
+	AppendMenu(menuPopupDraw, MF_POPUP, (UINT)menuPopupDrawFormat, L"Format");
+}
+void createMenuPopupEdit(HWND hWnd, HMENU& menuPopupEdit) {
+	HMENU hMenu = GetMenu(hWnd);
+	HMENU menuPopupEditFormat;
+
+	menuPopupEdit = CreateMenu();
+	AppendMenu(menuPopupEdit, MF_STRING, ID_EDIT_CUT, L"C&ut");
+	AppendMenu(menuPopupEdit, MF_STRING, ID_EDIT_COPY, L"C&opy");
+	AppendMenu(menuPopupEdit, MF_STRING, ID_EDIT_PASTE, L"&Paste");
+	AppendMenu(menuPopupEdit, MF_STRING, ID_EDIT_SELECT_ALL, L"Select &All");
+
+	menuPopupEditFormat = CreateMenu();
+	AppendMenu(menuPopupEditFormat, MF_STRING, ID_EDIT_FORMAT_COLOR, L"Choose &Color...");
+	AppendMenu(menuPopupEditFormat, MF_STRING, ID_EDIT_FORMAT_FONT, L"Choose &Font...");
+
+	AppendMenu(menuPopupEdit, MF_POPUP, (UINT)menuPopupEditFormat, L"Format");
 }
 
 //
@@ -162,6 +191,7 @@ void changeMenuBar(HWND hWnd, bool &isChangeMenu) {
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	static bool isChangeMenu = false;
+	static HMENU menuPopupDraw, menuPopupEdit;
 
     switch (message)
     {
@@ -172,20 +202,42 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             switch (wmId)
             {
 			case ID_FILE_NEW:
+				MessageBox(hWnd, L"Ban da chon chuc nang File New", L"Notice", MB_OK);
+				break;
 			case ID_FILE_OPEN:
+				MessageBox(hWnd, L"Ban da chon chuc nang File Open", L"Notice", MB_OK);
+				break;
 			case ID_FILE_SAVE:
+				MessageBox(hWnd, L"Ban da chon chuc nang File Save", L"Notice", MB_OK);
+				break;
 			case ID_FILE_SAVE_AS:
+				MessageBox(hWnd, L"Ban da chon chuc nang File Save As", L"Notice", MB_OK);
+				break;
 			case ID_DRAW_ELLIPSE:
-			case ID_DRAW_LINE:
-			case ID_DRAW_RECTANGLE:
-			case ID_DRAW_PIXEL:
-			case ID_DRAW_FORMAT_BRUSH:
-			case ID_DRAW_FORMAT_COLOR:
+				MessageBox(hWnd, L"Ban da chon chuc nang Draw Ellipse", L"Notice", MB_OK);
 				addCheckBox(hWnd, wmId);
+				break;
+			case ID_DRAW_LINE:
+				MessageBox(hWnd, L"Ban da chon chuc nang Draw Line", L"Notice", MB_OK);
+				addCheckBox(hWnd, wmId);
+				break;
+			case ID_DRAW_RECTANGLE:
+				MessageBox(hWnd, L"Ban da chon chuc nang Draw Rectangle", L"Notice", MB_OK);
+				addCheckBox(hWnd, wmId);
+				break;
+			case ID_DRAW_PIXEL:
+				MessageBox(hWnd, L"Ban da chon chuc nang Draw Pixel", L"Notice", MB_OK);
+				addCheckBox(hWnd, wmId);
+				break;
+			case ID_DRAW_FORMAT_BRUSH:
+				MessageBox(hWnd, L"Ban da chon chuc nang Draw Format Brush", L"Notice", MB_OK);
+				break;
+			case ID_DRAW_FORMAT_COLOR:
+				MessageBox(hWnd, L"Ban da chon chuc nang Draw Format Color", L"Notice", MB_OK);
 				break;
 			case ID_CHANGE_MENU:
 				isChangeMenu = !isChangeMenu;
-				changeMenuBar(hWnd, isChangeMenu);
+				changeMenuBar(hWnd, isChangeMenu, menuPopupDraw, menuPopupEdit);
 				break;
             case IDM_ABOUT:
                 DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
@@ -195,6 +247,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
         }
         break;
+	case WM_CREATE:
+	{
+		HMENU hMenu = GetMenu(hWnd);
+		createMenuPopupDraw(hWnd, menuPopupDraw);
+		createMenuPopupEdit(hWnd, menuPopupEdit);
+		curSelectMenuItem = -1;
+		InsertMenu(hMenu, 1, MF_POPUP | MF_BYPOSITION, (UINT)menuPopupDraw, L"Draw");
+		DrawMenuBar(hWnd);
+		break;
+	}
     case WM_PAINT:
         {
             PAINTSTRUCT ps;
