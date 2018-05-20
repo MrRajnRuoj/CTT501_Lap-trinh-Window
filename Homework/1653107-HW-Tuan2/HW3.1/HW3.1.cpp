@@ -250,6 +250,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_CREATE:
 	{
 		HMENU hMenu = GetMenu(hWnd);
+		SetMenuDefaultItem(hMenu, 0, MF_BYPOSITION);
 		createMenuPopupDraw(hWnd, menuPopupDraw);
 		createMenuPopupEdit(hWnd, menuPopupEdit);
 		curSelectMenuItem = -1;
