@@ -3,8 +3,15 @@
 
 #include "stdafx.h"
 #include "HW4.1.h"
+#include <fstream>
+#include <locale>
+#include <codecvt>
+#include <iostream>
+#include <io.h>
+#include <fcntl.h>
 
 #define MAX_LOADSTRING 100
+#define MAX_LENGTH		35
 
 // Global Variables:
 HINSTANCE hInst;                                // current instance
@@ -19,6 +26,12 @@ INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
 INT_PTR CALLBACK    inputDlgProc(HWND, UINT, WPARAM, LPARAM);
 
+struct INFO_DATA
+{
+	WCHAR hoten[MAX_LENGTH];
+	BOOL phai;
+	WCHAR bomon[MAX_LENGTH];
+};
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
                      _In_ LPWSTR    lpCmdLine,
@@ -136,6 +149,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			case ID_DIALOG_INPUT:
 			{
 				INT_PTR iptr = DialogBox(hInst, MAKEINTRESOURCE(IDD_NhapThongTin), hWnd, inputDlgProc);
+				if (iptr != IDCLOSE) {
+					INFO_DATA* infData = (INFO_DATA*)iptr;
+					const std::locale utf8_locale = std::locale(std::locale(), new std::codecvt_utf8<wchar_t>());
+					std::wofstream fOut;
+					fOut.open("info.txt", std::ios::out | std::ios::app);
+					fOut.imbue(utf8_locale);
+					WCHAR text[100];
+					wsprintf(text, L"Họ tên: %s \nPhái: %s \nBộ môn: %s", infData->hoten, infData->phai == true ? L"Nam" : L"Nữ", infData->bomon);
+					fOut << text << L"\n";
+					fOut.close();
+					delete infData;
+				}
 			}
 				break;
             case IDM_ABOUT:
@@ -212,6 +237,14 @@ INT_PTR CALLBACK inputDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
 			break;
 		case IDCLOSE:
 			EndDialog(hDlg, IDCLOSE);
+			break;
+		case IDOK:
+			INFO_DATA* infData;
+			infData = new INFO_DATA;
+			GetDlgItemText(hDlg, IDC_EDT_Hoten, infData->hoten, MAX_LENGTH);
+			infData->phai = IsDlgButtonChecked(hDlg, IDC_RADIO_Nam);
+			GetDlgItemText(hDlg, IDC_COMBO_Bomon, infData->bomon, MAX_LENGTH);
+			EndDialog(hDlg, (INT_PTR)infData);
 			break;
 		default:
 			break;
