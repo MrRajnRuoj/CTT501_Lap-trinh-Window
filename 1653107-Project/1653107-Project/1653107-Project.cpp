@@ -1,8 +1,10 @@
-// 1653107-Project.cpp : Defines the entry point for the application.
+﻿// 1653107-Project.cpp : Defines the entry point for the application.
 //
 
 #include "stdafx.h"
 #include "1653107-Project.h"
+#include <commdlg.h>
+#include <CommCtrl.h>
 
 #define MAX_LOADSTRING 100
 
@@ -13,6 +15,8 @@ WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 WCHAR szChildClass[MAX_LOADSTRING];				// child windown class name
 HWND hwndMDIClient = NULL;
 HWND hFrameWnd = NULL;
+HWND hToolBarWnd;
+int cmdShow;
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -35,7 +39,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     LoadStringW(hInstance, IDC_MY1653107PROJECT, szWindowClass, MAX_LOADSTRING);
 	LoadStringW(hInstance, IDS_CHILD_CLASS, szChildClass, MAX_LOADSTRING);
     MyRegisterClass(hInstance);
-
+	cmdShow = nCmdShow;
     // Perform application initialization:
     if (!InitInstance (hInstance, nCmdShow))
     {
@@ -138,7 +142,7 @@ void onCreateMDIClient(HWND hWnd) {
 	ccs.idFirstChild = 50001;
 	hwndMDIClient = CreateWindow(L"MDICLIENT",
 		(LPCTSTR)NULL,
-		WS_CHILD | WS_CLIPCHILDREN | WS_VSCROLL | WS_HSCROLL,
+		WS_CHILD| WS_CLIPCHILDREN | WS_VSCROLL | WS_HSCROLL,
 		0, 0, 0, 0,
 		hWnd,
 		(HMENU)NULL,
@@ -164,8 +168,75 @@ void onCreateChileWnd(int nWnd) {
 	mdiCreate.style = 0;
 	mdiCreate.lParam = NULL;
 
-	SendMessage(hwndMDIClient, WM_MDICREATE, 0, (LONG)(LPMDICREATESTRUCT)&mdiCreate);
+	SendMessage(hwndMDIClient, WM_MDICREATE, 0, (LPARAM)(LPMDICREATESTRUCT)&mdiCreate);
 }
+
+void onChooseColor(HWND hWnd) {
+	CHOOSECOLOR cc;
+	COLORREF acrCustClr[16];
+	DWORD rgbCurrent = RGB(255, 0, 0);
+
+	ZeroMemory(&cc, sizeof(CHOOSECOLOR));
+	cc.lStructSize = sizeof(CHOOSECOLOR);
+	cc.hwndOwner = hWnd;
+	cc.lpCustColors = (LPDWORD)acrCustClr;
+	cc.rgbResult = rgbCurrent;
+	cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+	if (ChooseColor(&cc)) {
+		// Xu ly mau duoc chon trong cc.rgbResult
+	}
+	else {
+		// Handle error
+	}
+}
+
+void onChooseFont(HWND hWnd) {
+	CHOOSEFONT cf;
+	LOGFONT lf;
+	HFONT hfNew, hfOld;
+
+	ZeroMemory(&cf, sizeof(CHOOSEFONT));
+	cf.lStructSize = sizeof(CHOOSEFONT);
+	cf.hwndOwner = hWnd;
+	cf.lpLogFont = &lf;
+	cf.Flags = CF_SCREENFONTS | CF_EFFECTS;
+	if (ChooseFont(&cf)) {
+		// xu ly font
+	}
+}
+
+LRESULT CALLBACK MDICloseProc(HWND hWnd, LPARAM lParam) {
+	SendMessage(hwndMDIClient, WM_MDIDESTROY, (WPARAM)hWnd, 0L);
+	return 1;
+}
+
+void createToolBar(HWND hWnd) {
+	// loading Common Control DLL
+	InitCommonControls();
+
+	TBBUTTON tbButtons[] =
+	{
+		{ STD_FILENEW,	ID_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
+		{ STD_FILEOPEN,	ID_FILE_OPEN, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
+		{ STD_FILESAVE,	ID_FILE_SAVE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 }
+	};
+
+	// create a toolbar
+	hToolBarWnd = CreateToolbarEx(hWnd,
+		WS_CHILD | WS_VISIBLE | CCS_ADJUSTABLE | TBSTYLE_TOOLTIPS,
+		ID_TOOLBAR,
+		sizeof(tbButtons) / sizeof(TBBUTTON),
+		HINST_COMMCTRL,
+		0,
+		tbButtons,
+		sizeof(tbButtons) / sizeof(TBBUTTON),
+		BUTTON_WIDTH,
+		BUTTON_HEIGHT,
+		IMAGE_WIDTH,
+		IMAGE_HEIGHT,
+		sizeof(TBBUTTON));
+}
+
 //
 //  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
 //
@@ -179,6 +250,7 @@ void onCreateChileWnd(int nWnd) {
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	static int nWnd = 0;
+	static int curDrawSel;
 
 	switch (message)
 	{
@@ -192,15 +264,54 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			++nWnd;
 			onCreateChileWnd(nWnd);
 			break;
+		case ID_FILE_OPEN:
+			MessageBox(hWnd, L"Bạn đã chọn Open", L"Notice", MB_OK);
+			break;
+		case ID_FILE_SAVE:
+			MessageBox(hWnd, L"Bạn đã chọn Save", L"Notice", MB_OK);
+			break;
 		case ID_FILE_EXIT:
 			DestroyWindow(hWnd);
+			break;
+		case ID_DRAW_COLOR:
+			onChooseColor(hWnd);
+			break; 
+		case ID_DRAW_FONT:
+			onChooseFont(hWnd);
+			break;
+		case ID_DRAW_LINE:
+		case ID_DRAW_ELLIPSE:
+		case ID_DRAW_RECTANGLE:
+		case ID_DRAW_TEXT:
+		case ID_DRAW_SELECTOBJECT:
+		{
+			HMENU hMenu = GetMenu(hWnd);
+			CheckMenuItem(hMenu, curDrawSel, MF_UNCHECKED | MF_BYCOMMAND);
+			CheckMenuItem(hMenu, wmId, MF_CHECKED | MF_BYCOMMAND);
+			curDrawSel = wmId;
+			break;
+		}
+		case ID_WINDOW_TIDE:
+			SendMessage(hwndMDIClient, WM_MDITILE, 0, 0);
+			break;
+		case ID_WINDOW_CASCADE:
+			SendMessage(hwndMDIClient, WM_MDICASCADE, 0, 0);
+			break;
+		case ID_WINDOW_CLOSEALL:
+			EnumChildWindows(hwndMDIClient, (WNDENUMPROC)MDICloseProc, 0L);
 			break;
 		}
 	}
 	break;
 	case WM_CREATE:
+	{
 		onCreateMDIClient(hWnd);
+		HMENU hMenu = GetMenu(hWnd);
+		CheckMenuItem(hMenu, ID_DRAW_LINE, MF_CHECKED | MF_BYCOMMAND);
+		curDrawSel = ID_DRAW_LINE;
+		createToolBar(hWnd);
 		return 0;
+	}
 	case WM_SIZE:
 	{
 		UINT w, h;
@@ -208,7 +319,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		w = LOWORD(lParam);
 		h = HIWORD(lParam);
 		MoveWindow(hwndMDIClient, 0, 0, w, h, TRUE);
-		break;
+		return 0;
 	}
 	case WM_PAINT:
 	{

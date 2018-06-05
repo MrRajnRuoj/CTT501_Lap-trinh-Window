@@ -52,4 +52,7 @@
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
+  <ItemGroup>
+    <Library Include="ComCtl32.Lib" />
+  </ItemGroup>
 </Project>
