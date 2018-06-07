@@ -27,7 +27,7 @@
     <ClInclude Include="Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="1653107-Project.h">
+    <ClInclude Include="1653107-HW-Tuan5.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -35,12 +35,12 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="1653107-Project.cpp">
+    <ClCompile Include="1653107-HW-Tuan5.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="1653107-Project.rc">
+    <ResourceCompile Include="1653107-HW-Tuan5.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
@@ -48,14 +48,13 @@
     <Image Include="small.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="1653107-Project.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="bitmap1.bmp">
+    <Image Include="1653107-HW-Tuan5.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="ComCtl32.Lib" />
+    <Library Include="..\x64\Debug\CalculateInt.lib">
+      <Filter>Source Files</Filter>
+    </Library>
   </ItemGroup>
 </Project>

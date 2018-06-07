@@ -304,7 +304,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		EnableMenuItem(hMenu, 1, MF_DISABLED | MF_BYPOSITION);
 		EnableMenuItem(hMenu, 2, MF_DISABLED | MF_BYPOSITION);
 		EnableMenuItem(hMenu, 3, MF_DISABLED | MF_BYPOSITION);
-		break;
+		return 0;
 	}
 	case WM_SIZE:
 	{

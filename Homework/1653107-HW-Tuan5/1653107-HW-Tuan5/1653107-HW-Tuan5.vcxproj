@@ -19,9 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{1102A4C7-E2CE-448D-863B-EA311BF8711D}</ProjectGuid>
+    <ProjectGuid>{B3D98216-0182-4667-A930-F906AB9E60C5}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>My1653107Project</RootNamespace>
+    <RootNamespace>My1653107HWTuan5</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -141,13 +141,13 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="1653107-Project.h" />
+    <ClInclude Include="1653107-HW-Tuan5.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="1653107-Project.cpp" />
+    <ClCompile Include="1653107-HW-Tuan5.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -156,15 +156,14 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="1653107-Project.rc" />
+    <ResourceCompile Include="1653107-HW-Tuan5.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="1653107-Project.ico" />
-    <Image Include="bitmap1.bmp" />
+    <Image Include="1653107-HW-Tuan5.ico" />
     <Image Include="small.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="ComCtl32.Lib" />
+    <Library Include="..\x64\Debug\CalculateInt.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

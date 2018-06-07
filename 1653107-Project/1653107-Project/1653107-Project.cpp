@@ -237,6 +237,35 @@ void createToolBar(HWND hWnd) {
 		sizeof(TBBUTTON));
 }
 
+void addUserButton2Toolbar() {
+	// define new buttons
+	TBBUTTON tbButtons[] =
+	{
+		{ 0, 0,	TBSTATE_ENABLED, TBSTYLE_SEP, 0, 0 },
+		{ 0, ID_DRAW_LINE,	TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
+		{ 1, ID_DRAW_RECTANGLE,	TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
+		{ 2, ID_DRAW_ELLIPSE,	TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
+		{ 3, ID_DRAW_TEXT,	TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
+		{ 4, ID_DRAW_SELECTOBJECT,	TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 }
+	};
+
+	// structure contains the bitmap of user defined buttons. It contains 2 icons
+	TBADDBITMAP	tbBitmap = { hInst,  IDB_BMP_TOOLBAR};
+
+	// Add bitmap to Image-list of ToolBar
+	int idx = SendMessage(hToolBarWnd, TB_ADDBITMAP, (WPARAM) sizeof(tbBitmap) / sizeof(TBADDBITMAP),
+		(LPARAM)(LPTBADDBITMAP)&tbBitmap);
+
+	// identify the bitmap index of each button
+	for (int i = 1; i <= 5; ++i) 
+		tbButtons[i].iBitmap += idx;
+
+
+	// add buttons to toolbar
+	SendMessage(hToolBarWnd, TB_ADDBUTTONS, (WPARAM) sizeof(tbButtons) / sizeof(TBBUTTON),
+		(LPARAM)(LPTBBUTTON)&tbButtons);
+}
+
 //
 //  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
 //
@@ -310,6 +339,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		CheckMenuItem(hMenu, ID_DRAW_LINE, MF_CHECKED | MF_BYCOMMAND);
 		curDrawSel = ID_DRAW_LINE;
 		createToolBar(hWnd);
+		addUserButton2Toolbar();
 		return 0;
 	}
 	case WM_SIZE:
@@ -318,7 +348,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		w = LOWORD(lParam);
 		h = HIWORD(lParam);
-		MoveWindow(hwndMDIClient, 0, 0, w, h, TRUE);
+		MoveWindow(hwndMDIClient, 0, 29, w, h - 29, TRUE);
 		return 0;
 	}
 	case WM_PAINT:
