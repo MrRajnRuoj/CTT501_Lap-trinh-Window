@@ -6,6 +6,7 @@
 #include <commdlg.h>
 #include <CommCtrl.h>
 
+
 #define MAX_LOADSTRING 100
 
 // Global Variables:
@@ -53,7 +54,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // Main message loop:
     while (GetMessage(&msg, nullptr, 0, 0))
     {
-        if (!TranslateAccelerator(hFrameWnd, hAccelTable, &msg))
+        if (!TranslateMDISysAccel(hwndMDIClient,  &msg) && 
+			!TranslateAccelerator(hFrameWnd, hAccelTable, &msg))
         {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
@@ -348,7 +350,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		w = LOWORD(lParam);
 		h = HIWORD(lParam);
-		MoveWindow(hwndMDIClient, 0, 29, w, h - 29, TRUE);
+		MoveWindow(hwndMDIClient, 0, 29, w, h - 29, true);
+		MoveWindow(hToolBarWnd, 0, 0, 0, 0, true);
+		SendMessage(hwndMDIClient, WM_MDIICONARRANGE, 0, 0);
 		return 0;
 	}
 	case WM_PAINT:
