@@ -73,9 +73,8 @@ void setResult(HWND hDlg, int type, int result) {
 		wsprintf(strType, L"*");
 	else if (type == CHIA)
 		wsprintf(strType, L"/");
-	wsprintf(strResult, L"a %s b = %d", strType, result);
-	SendDlgItemMessage(hDlg, IDC_LB_RESULT, LB_RESETCONTENT, 0, 0);
-	SendDlgItemMessage(hDlg, IDC_LB_RESULT, LB_ADDSTRING, 0, (LPARAM)strResult);
+	wsprintf(strResult, L"Ket qua a %s b = %d", strType, result);
+	SetDlgItemText(hDlg, IDC_STATIC_Result, strResult);
 }
 
 int Nhan(HWND hDlg, int a, int b) {
@@ -162,6 +161,7 @@ INT_PTR CALLBACK CalculateWndProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM
 			case IDCANCEL:
 			case IDC_BUTTON_QUIT:
 				EndDialog(hDlg, LOWORD(wParam));
+				PostQuitMessage(0);
 				break;
 			}
 			return (INT_PTR)TRUE;

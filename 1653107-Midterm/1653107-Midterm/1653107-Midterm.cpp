@@ -1,21 +1,22 @@
-// Clock.cpp : Defines the entry point for the application.
+// 1653107-Midterm.cpp : Defines the entry point for the application.
 //
 
 #include "stdafx.h"
-#include "Clock.h"
+#include "DataStructure.h"
 
-#define MAX_LOADSTRING 100
-#define COUNTDOWN 1000
+#define MAX_LOADSTRING	100
+#define COUNTDOWN		12345 
+#define INPUT_FILE		"pacman-params.txt"
 
 // Global Variables:
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
-HBITMAP hBmp = NULL;
-HFONT hFont;
-HRGN hRgn;
-BITMAP bmpObj;
-int timer = 300;
+
+HMENU hMenu;
+int timer;		// seconds
+GameData* gData;
+Game* game;
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -35,7 +36,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     // Initialize global strings
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-    LoadStringW(hInstance, IDC_CLOCK, szWindowClass, MAX_LOADSTRING);
+    LoadStringW(hInstance, IDC_MY1653107MIDTERM, szWindowClass, MAX_LOADSTRING);
     MyRegisterClass(hInstance);
 
     // Perform application initialization:
@@ -44,7 +45,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
-    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_CLOCK));
+    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_MY1653107MIDTERM));
 
     MSG msg;
 
@@ -79,10 +80,10 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.cbClsExtra     = 0;
     wcex.cbWndExtra     = 0;
     wcex.hInstance      = hInstance;
-    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CLOCK));
+    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_MY1653107MIDTERM));
     wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_CLOCK);
+    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_MY1653107MIDTERM);
     wcex.lpszClassName  = szWindowClass;
     wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
@@ -117,49 +118,67 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    return TRUE;
 }
 
+void importData() {
+	fstream fInput;
+	fInput.open(INPUT_FILE, ios::in);
+	int nMapline;
+	fInput >> nMapline;
+	for (int i = 0; i < nMapline; ++i) {
+		MapLine mLine;
+		fInput >> mLine.start.x >> mLine.start.y;
+		fInput >> mLine.end.x >> mLine.end.y;
+		gData->mapLines.push_back(mLine);
+	}
+	fInput >> gData->nPacDot;
+	fInput >> gData->pacMan.x >> gData->pacMan.y;
+	fInput >> gData->timer;
+	fInput.close();
+}
 void initData(HWND hWnd) {
-	hBmp = (HBITMAP)LoadImage(hInst, L"clock.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-	GetObject(hBmp, sizeof(BITMAP), &bmpObj);
+	gData = new GameData();
+	game = new Game(gData);
+	
+	hBmpMap = (HBITMAP)LoadImage(hInst, L"pacman-map.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	hBmpPacMan = (HBITMAP)LoadImage(hInst, L"pacman.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	GetObject(hBmpMap, sizeof(BITMAP), &bmpMapObj);
+	GetObject(hBmpPacMan, sizeof(BITMAP), &bmpPacManObj);
 
-	hRgn = CreateEllipticRgn(0, 0, bmpObj.bmWidth, bmpObj.bmHeight);
-	SetWindowRgn(hWnd, hRgn, TRUE);
-	MoveWindow(hWnd, 0, 0, bmpObj.bmWidth, bmpObj.bmHeight, TRUE);
+	MoveWindow(hWnd, 0, 0, bmpMapObj.bmWidth, bmpMapObj.bmHeight, TRUE);
 
-	hFont = CreateFont(78, 0, 0, 0, FW_DONTCARE, false, false, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, VARIABLE_PITCH, TEXT("Arial"));
 	SetTimer(hWnd, COUNTDOWN, 1000, NULL);
+
+	hMenu = GetMenu(hWnd);
+	EnableMenuItem(hMenu, ID_ENDGAME, MF_GRAYED | MF_BYCOMMAND);
 }
 
-void drawClock(HWND hWnd) {
-	HDC hdc = GetWindowDC(hWnd);
-	SYSTEMTIME st;
-	WCHAR sTime[50];
-	RECT r;
-
-	HDC memDC = CreateCompatibleDC(hdc);	// Create "virtual" DC in memory
-
-	SelectObject(memDC, hBmp);
-	//GetLocalTime(&st);
-	//wsprintf(sTime, L"%02d:%02d:%02d", st.wHour, st.wMinute, st.wSecond);
-	wsprintf(sTime, L"00:%02d:%02d", timer / 60, timer % 60);
-	GetWindowRect(hWnd, &r);
-	r.right -= r.left;
-	r.left = 0;
-	r.bottom -= r.top;
-	r.top = 0;
-	// start debug
-	WCHAR mess[MAX_LOADSTRING];
-	wsprintf(mess, L"left: %d top: %d right: %d buttom: %d\n", r.left, r.top, r.right, r.bottom);
-	OutputDebugString(sTime);
-	// end debug
-	SelectObject(memDC, hFont);
-	DrawText(memDC, sTime, lstrlen(sTime), &r, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
-	BitBlt(hdc, 0, 0, bmpObj.bmWidth, bmpObj.bmHeight, memDC, 0, 0, SRCCOPY);
+void drawMap(HWND hWnd) {
+	
+	HDC hdc = GetDC(hWnd);
+	HDC memDC = CreateCompatibleDC(hdc);
+	SelectObject(memDC, hBmpMap);
+	BitBlt(hdc, 0, 0, bmpMapObj.bmWidth, bmpMapObj.bmHeight, memDC, 0, 0, SRCCOPY);
 
 	DeleteDC(memDC);
 	ReleaseDC(hWnd, hdc);
 }
 
 
+void startGame(HWND hWnd) {
+	PacMan pacMan(gData);
+	game->generatePacDot(hWnd);
+	game->drawPacMan(hWnd);
+	EnableMenuItem(hMenu, ID_STARTGAME, MF_GRAYED | MF_BYCOMMAND);
+	EnableMenuItem(hMenu, ID_ENDGAME, MF_ENABLED | MF_BYCOMMAND);
+}
+
+void endGame(HWND hWnd) {
+	WCHAR mess[MAX_LOADSTRING];
+
+	wsprintf(mess, L"Game over. You earned %d pac-dots", gData->nPacDot - gData->pacDots.size());
+	MessageBox(hWnd, mess, L"Game Over", MB_OK);
+	EnableMenuItem(hMenu, ID_ENDGAME, MF_GRAYED | MF_BYCOMMAND);
+	EnableMenuItem(hMenu, ID_STARTGAME, MF_ENABLED | MF_BYCOMMAND);
+}
 //
 //  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
 //
@@ -172,20 +191,24 @@ void drawClock(HWND hWnd) {
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	static bool isGameStarted = false;
+
     switch (message)
     {
-	case WM_CREATE:
-		initData(hWnd);
-		break;
     case WM_COMMAND:
         {
             int wmId = LOWORD(wParam);
             // Parse the menu selections:
             switch (wmId)
             {
-            case IDM_ABOUT:
-                DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-                break;
+			case ID_STARTGAME:
+				isGameStarted = true;
+				startGame(hWnd);
+				break;
+			case ID_ENDGAME:
+				isGameStarted = false;
+				endGame(hWnd);
+				break;
             case IDM_EXIT:
                 DestroyWindow(hWnd);
                 break;
@@ -194,29 +217,67 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
         }
         break;
+	case WM_CREATE:
+		initData(hWnd);
+		importData();
+		break;
+	case WM_TIMER:
+		if (isGameStarted) {
+			--gData->timer;
+			if (gData->timer == 0)
+				endGame(hWnd);
+		}
+		break;
     case WM_PAINT:
-		//drawClock(hWnd);
 	{
 		PAINTSTRUCT ps;
 		HDC hdc = BeginPaint(hWnd, &ps);
-		// TODO: Add any drawing code that uses hdc here...
-		//
 		EndPaint(hWnd, &ps);
+		drawMap(hWnd);
 	}
         break;
-	case WM_TIMER:
-		drawClock(hWnd);
-		--timer;
-		break;
-	case WM_RBUTTONDOWN:
-		DestroyWindow(hWnd);
-		break;
+	case WM_KEYDOWN:
+	{
+		if (isGameStarted)
+		{
+			switch (wParam)
+			{
+			case VK_LEFT:
+				if (game->isInMapLine(gData->pacMan.x - 1, gData->pacMan.y)) {
+					gData->pacMan.x -= 1;
+					game->eatPacDot();
+					game->drawPacMan(hWnd);
+				}
+				break;
+			case VK_RIGHT:
+				if (game->isInMapLine(gData->pacMan.x + 1, gData->pacMan.y)) {
+					gData->pacMan.x += 1;
+					game->eatPacDot();
+					game->drawPacMan(hWnd);
+				}
+				break;
+			case VK_UP:
+				if (game->isInMapLine(gData->pacMan.x, gData->pacMan.y - 1)) {
+					gData->pacMan.y -= 1;
+					game->eatPacDot();
+					game->drawPacMan(hWnd);
+				}
+				break;
+			case VK_DOWN:
+				if (game->isInMapLine(gData->pacMan.x, gData->pacMan.y + 1)) {
+					gData->pacMan.y += 1;
+					game->eatPacDot();
+					game->drawPacMan(hWnd);
+				}
+				break;
+			}
+			if (gData->pacDots.size() == 0)
+				endGame(hWnd);
+		}
+	}
+	break;
     case WM_DESTROY:
-		DeleteObject(hBmp);
-		DeleteObject(hFont);
-		DeleteObject(hRgn);
         PostQuitMessage(0);
-		KillTimer(hWnd, COUNTDOWN);
         break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
