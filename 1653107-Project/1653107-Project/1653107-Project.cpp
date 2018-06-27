@@ -3,9 +3,7 @@
 
 #include "stdafx.h"
 #include "1653107-Project.h"
-#include <commdlg.h>
-#include <CommCtrl.h>
-
+#include "ChildWindow.h"
 
 #define MAX_LOADSTRING 100
 
@@ -16,8 +14,9 @@ WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 WCHAR szChildClass[MAX_LOADSTRING];				// child windown class name
 HWND hwndMDIClient = NULL;
 HWND hFrameWnd = NULL;
-HWND hToolBarWnd;
-int cmdShow;
+HWND hToolBarWnd, hCurrWnd;
+vector<ChildWindow*> arrChildWindow;
+Mode curMode = Line;
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -40,7 +39,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     LoadStringW(hInstance, IDC_MY1653107PROJECT, szWindowClass, MAX_LOADSTRING);
 	LoadStringW(hInstance, IDS_CHILD_CLASS, szChildClass, MAX_LOADSTRING);
     MyRegisterClass(hInstance);
-	cmdShow = nCmdShow;
     // Perform application initialization:
     if (!InitInstance (hInstance, nCmdShow))
     {
@@ -64,7 +62,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     return (int) msg.wParam;
 }
-
 
 
 //
@@ -137,136 +134,6 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    return TRUE;
 }
-void onCreateMDIClient(HWND hWnd) {
-	CLIENTCREATESTRUCT ccs;
-
-	ccs.hWindowMenu = GetSubMenu(GetMenu(hWnd), 2);
-	ccs.idFirstChild = 50001;
-	hwndMDIClient = CreateWindow(L"MDICLIENT",
-		(LPCTSTR)NULL,
-		WS_CHILD| WS_CLIPCHILDREN | WS_VSCROLL | WS_HSCROLL,
-		0, 0, 0, 0,
-		hWnd,
-		(HMENU)NULL,
-		hInst,
-		(LPVOID)&ccs);
-	ShowWindow(hwndMDIClient, SW_SHOW);
-}
-
-void onCreateChileWnd(int nWnd) {
-	MDICREATESTRUCT mdiCreate;
-	WCHAR title[MAX_LOADSTRING];
-
-	ZeroMemory(&mdiCreate, sizeof(MDICREATESTRUCT));
-	wsprintf(title, L"Noname-%d.drw", nWnd);
-
-	mdiCreate.szClass = szChildClass;
-	mdiCreate.szTitle = title;
-	mdiCreate.hOwner = hInst;
-	mdiCreate.x = CW_USEDEFAULT;
-	mdiCreate.y = CW_USEDEFAULT;
-	mdiCreate.cx = CW_USEDEFAULT;
-	mdiCreate.cy = CW_USEDEFAULT;
-	mdiCreate.style = 0;
-	mdiCreate.lParam = NULL;
-
-	SendMessage(hwndMDIClient, WM_MDICREATE, 0, (LPARAM)(LPMDICREATESTRUCT)&mdiCreate);
-}
-
-void onChooseColor(HWND hWnd) {
-	CHOOSECOLOR cc;
-	COLORREF acrCustClr[16];
-	DWORD rgbCurrent = RGB(255, 0, 0);
-
-	ZeroMemory(&cc, sizeof(CHOOSECOLOR));
-	cc.lStructSize = sizeof(CHOOSECOLOR);
-	cc.hwndOwner = hWnd;
-	cc.lpCustColors = (LPDWORD)acrCustClr;
-	cc.rgbResult = rgbCurrent;
-	cc.Flags = CC_FULLOPEN | CC_RGBINIT;
-	if (ChooseColor(&cc)) {
-		// Xu ly mau duoc chon trong cc.rgbResult
-	}
-	else {
-		// Handle error
-	}
-}
-
-void onChooseFont(HWND hWnd) {
-	CHOOSEFONT cf;
-	LOGFONT lf;
-	HFONT hfNew, hfOld;
-
-	ZeroMemory(&cf, sizeof(CHOOSEFONT));
-	cf.lStructSize = sizeof(CHOOSEFONT);
-	cf.hwndOwner = hWnd;
-	cf.lpLogFont = &lf;
-	cf.Flags = CF_SCREENFONTS | CF_EFFECTS;
-	if (ChooseFont(&cf)) {
-		// xu ly font
-	}
-}
-
-LRESULT CALLBACK MDICloseProc(HWND hWnd, LPARAM lParam) {
-	SendMessage(hwndMDIClient, WM_MDIDESTROY, (WPARAM)hWnd, 0L);
-	return 1;
-}
-
-void createToolBar(HWND hWnd) {
-	// loading Common Control DLL
-	InitCommonControls();
-
-	TBBUTTON tbButtons[] =
-	{
-		{ STD_FILENEW,	ID_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-		{ STD_FILEOPEN,	ID_FILE_OPEN, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-		{ STD_FILESAVE,	ID_FILE_SAVE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 }
-	};
-
-	// create a toolbar
-	hToolBarWnd = CreateToolbarEx(hWnd,
-		WS_CHILD | WS_VISIBLE | CCS_ADJUSTABLE | TBSTYLE_TOOLTIPS,
-		ID_TOOLBAR,
-		sizeof(tbButtons) / sizeof(TBBUTTON),
-		HINST_COMMCTRL,
-		0,
-		tbButtons,
-		sizeof(tbButtons) / sizeof(TBBUTTON),
-		BUTTON_WIDTH,
-		BUTTON_HEIGHT,
-		IMAGE_WIDTH,
-		IMAGE_HEIGHT,
-		sizeof(TBBUTTON));
-}
-
-void addUserButton2Toolbar() {
-	// define new buttons
-	TBBUTTON tbButtons[] =
-	{
-		{ 0, 0,	TBSTATE_ENABLED, TBSTYLE_SEP, 0, 0 },
-		{ 0, ID_DRAW_LINE,	TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-		{ 1, ID_DRAW_RECTANGLE,	TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-		{ 2, ID_DRAW_ELLIPSE,	TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-		{ 3, ID_DRAW_TEXT,	TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-		{ 4, ID_DRAW_SELECTOBJECT,	TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 }
-	};
-
-	// structure contains the bitmap of user defined buttons. It contains 2 icons
-	TBADDBITMAP	tbBitmap = { hInst,  IDB_BMP_TOOLBAR};
-
-	// Add bitmap to Image-list of ToolBar
-	int idx = SendMessage(hToolBarWnd, TB_ADDBITMAP, (WPARAM) sizeof(tbBitmap) / sizeof(TBADDBITMAP),
-		(LPARAM)(LPTBADDBITMAP)&tbBitmap);
-
-	// identify the bitmap index of each button
-	for (int i = 1; i <= 5; ++i) 
-		tbButtons[i].iBitmap += idx;
-
-
-	// add buttons to toolbar
-	SendMessage(hToolBarWnd, TB_ADDBUTTONS, (WPARAM) sizeof(tbButtons) / sizeof(TBBUTTON),
-		(LPARAM)(LPTBBUTTON)&tbButtons);
-}
 
 //
 //  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
@@ -320,6 +187,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			CheckMenuItem(hMenu, curDrawSel, MF_UNCHECKED | MF_BYCOMMAND);
 			CheckMenuItem(hMenu, wmId, MF_CHECKED | MF_BYCOMMAND);
 			curDrawSel = wmId;
+			curMode = (Mode)wmId;
 			break;
 		}
 		case ID_WINDOW_TIDE:
@@ -374,11 +242,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 // Processes messages for Child Windown
 LRESULT CALLBACK ChildWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	int idx = indexOfHandle(hWnd);
 	switch (message)
 	{
 	case WM_CREATE:
+		onInitMDIChild(hWnd);
 		break;
 	case WM_MDIACTIVATE:
+		hCurrWnd = hWnd;
+		break;
+	case WM_LBUTTONDOWN:
+		break;
+	case WM_MOUSEMOVE:
+		break;
+	case WM_LBUTTONUP:
 		break;
 	case WM_CLOSE:
 		break;
@@ -396,4 +273,162 @@ LRESULT CALLBACK ChildWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 	break;
 	}
 	return DefMDIChildProc(hWnd, message, wParam, lParam);
+}
+
+void onCreateMDIClient(HWND hWnd) {
+	CLIENTCREATESTRUCT ccs;
+
+	ccs.hWindowMenu = GetSubMenu(GetMenu(hWnd), 2);
+	ccs.idFirstChild = 50001;
+	hwndMDIClient = CreateWindow(L"MDICLIENT",
+		(LPCTSTR)NULL,
+		WS_CHILD | WS_CLIPCHILDREN | WS_VSCROLL | WS_HSCROLL,
+		0, 0, 0, 0,
+		hWnd,
+		(HMENU)NULL,
+		hInst,
+		(LPVOID)&ccs);
+	ShowWindow(hwndMDIClient, SW_SHOW);
+}
+
+void onCreateChileWnd(int nWnd) {
+	MDICREATESTRUCT mdiCreate;
+	WCHAR title[MAX_LOADSTRING];
+
+	ZeroMemory(&mdiCreate, sizeof(MDICREATESTRUCT));
+	wsprintf(title, L"Noname-%d.drw", nWnd);
+
+	mdiCreate.szClass = szChildClass;
+	mdiCreate.szTitle = title;
+	mdiCreate.hOwner = hInst;
+	mdiCreate.x = CW_USEDEFAULT;
+	mdiCreate.y = CW_USEDEFAULT;
+	mdiCreate.cx = CW_USEDEFAULT;
+	mdiCreate.cy = CW_USEDEFAULT;
+	mdiCreate.style = 0;
+	mdiCreate.lParam = NULL;
+
+	SendMessage(hwndMDIClient, WM_MDICREATE, 0, (LPARAM)(LPMDICREATESTRUCT)&mdiCreate);
+}
+
+void onChooseColor(HWND hWnd) {
+	CHOOSECOLOR cc;
+	COLORREF acrCustClr[16];
+	DWORD rgbCurrent = RGB(255, 0, 0);
+
+	ZeroMemory(&cc, sizeof(CHOOSECOLOR));
+	cc.lStructSize = sizeof(CHOOSECOLOR);
+	cc.hwndOwner = hWnd;
+	cc.lpCustColors = (LPDWORD)acrCustClr;
+	cc.rgbResult = rgbCurrent;
+	cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+	if (ChooseColor(&cc)) {
+		int idx = indexOfHandle(hCurrWnd);
+		if (idx != -1)
+			arrChildWindow[idx]->setColor(cc.rgbResult);
+		else
+			MessageBox(hWnd, L"Cannot find hCurrWnd to set color", L"Error", MB_OK);
+	}
+	else 
+		MessageBox(hWnd, L"ChooseColor error!", L"Error", MB_OK);
+}
+
+void onChooseFont(HWND hWnd) {
+	CHOOSEFONT cf;
+	LOGFONT lf;
+
+	ZeroMemory(&cf, sizeof(CHOOSEFONT));
+	cf.lStructSize = sizeof(CHOOSEFONT);
+	cf.hwndOwner = hWnd;
+	cf.lpLogFont = &lf;
+	cf.Flags = CF_SCREENFONTS | CF_EFFECTS;
+	if (ChooseFont(&cf)) {
+		int idx = indexOfHandle(hCurrWnd);
+		if (idx != -1)
+			arrChildWindow[idx]->setFont(CreateFontIndirect(cf.lpLogFont));
+		else
+			MessageBox(hWnd, L"Cannot find hCurrWnd to set font", L"Error", MB_OK);
+	}
+	else
+		MessageBox(hWnd, L"ChooseFont error!", L"Error", MB_OK);
+}
+
+LRESULT CALLBACK MDICloseProc(HWND hWnd, LPARAM lParam) {
+	SendMessage(hwndMDIClient, WM_MDIDESTROY, (WPARAM)hWnd, 0L);
+	return 1;
+}
+
+void createToolBar(HWND hWnd) {
+	// loading Common Control DLL
+	InitCommonControls();
+
+	TBBUTTON tbButtons[] =
+	{
+		{ STD_FILENEW,	ID_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
+		{ STD_FILEOPEN,	ID_FILE_OPEN, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
+		{ STD_FILESAVE,	ID_FILE_SAVE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 }
+	};
+
+	// create a toolbar
+	hToolBarWnd = CreateToolbarEx(hWnd,
+		WS_CHILD | WS_VISIBLE | CCS_ADJUSTABLE | TBSTYLE_TOOLTIPS,
+		ID_TOOLBAR,
+		sizeof(tbButtons) / sizeof(TBBUTTON),
+		HINST_COMMCTRL,
+		0,
+		tbButtons,
+		sizeof(tbButtons) / sizeof(TBBUTTON),
+		BUTTON_WIDTH,
+		BUTTON_HEIGHT,
+		IMAGE_WIDTH,
+		IMAGE_HEIGHT,
+		sizeof(TBBUTTON));
+}
+
+void addUserButton2Toolbar() {
+	// define new buttons
+	TBBUTTON tbButtons[] =
+	{
+		{ 0, 0,	TBSTATE_ENABLED, TBSTYLE_SEP, 0, 0 },
+		{ 0, ID_DRAW_LINE,	TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
+		{ 1, ID_DRAW_RECTANGLE,	TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
+		{ 2, ID_DRAW_ELLIPSE,	TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
+		{ 3, ID_DRAW_TEXT,	TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
+		{ 4, ID_DRAW_SELECTOBJECT,	TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 }
+	};
+
+	// structure contains the bitmap of user defined buttons. It contains 2 icons
+	TBADDBITMAP	tbBitmap = { hInst,  IDB_BMP_TOOLBAR };
+
+	// Add bitmap to Image-list of ToolBar
+	int idx = (int)SendMessage(hToolBarWnd, TB_ADDBITMAP, (WPARAM) sizeof(tbBitmap) / sizeof(TBADDBITMAP),
+		(LPARAM)(LPTBADDBITMAP)&tbBitmap);
+
+	// identify the bitmap index of each button
+	for (int i = 1; i <= 5; ++i)
+		tbButtons[i].iBitmap += idx;
+
+
+	// add buttons to toolbar
+	SendMessage(hToolBarWnd, TB_ADDBUTTONS, (WPARAM) sizeof(tbButtons) / sizeof(TBBUTTON),
+		(LPARAM)(LPTBBUTTON)&tbButtons);
+}
+
+void onInitMDIChild(HWND hWnd) {
+	ChildWindow* wndData;
+	wndData = (ChildWindow*)VirtualAlloc(NULL, sizeof(ChildWindow), MEM_COMMIT, PAGE_READWRITE);
+	wndData->setHandle(hWnd);
+	if (SetWindowLongPtr(hWnd, 0, (LONG_PTR)wndData) == 0) {
+		if (GetLastError() != 0)
+			MessageBox(hWnd, L"Set data error", L"Error", MB_ICONERROR);
+	}
+	arrChildWindow.push_back(wndData);
+}
+
+int indexOfHandle(HWND hWnd) {
+	for (int i = 0; i < arrChildWindow.size(); ++i) {
+		if (arrChildWindow[i]->getHandle() == hWnd)
+			return i;
+	}
+	return -1;
 }

@@ -180,7 +180,6 @@ void onInitMDIChild(HWND hWnd, int type) {
 	wndData = (CHILD_WND_DATA*)VirtualAlloc(NULL, sizeof(CHILD_WND_DATA), MEM_COMMIT, PAGE_READWRITE);
 	wndData->type = type;
 	wndData->hWnd = hWnd;
-	SetLastError(0);
 	if (SetWindowLongPtr(hWnd, 0, (LONG_PTR)wndData) == 0) {
 		if (GetLastError() != 0)
 			MessageBox(hWnd, L"Set data error", L"Error", MB_ICONERROR);
