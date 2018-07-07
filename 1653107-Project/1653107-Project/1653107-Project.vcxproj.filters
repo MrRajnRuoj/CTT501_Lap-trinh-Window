@@ -45,6 +45,15 @@
     <ClInclude Include="Object.h">
       <Filter>Header Files\DataStructure</Filter>
     </ClInclude>
+    <ClInclude Include="RectangleObject.h">
+      <Filter>Header Files\DataStructure</Filter>
+    </ClInclude>
+    <ClInclude Include="EllipseObject.h">
+      <Filter>Header Files\DataStructure</Filter>
+    </ClInclude>
+    <ClInclude Include="TextObject.h">
+      <Filter>Header Files\DataStructure</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -57,6 +66,18 @@
       <Filter>Source Files\DataStructrure</Filter>
     </ClCompile>
     <ClCompile Include="LineObject.cpp">
+      <Filter>Source Files\DataStructrure</Filter>
+    </ClCompile>
+    <ClCompile Include="Object.cpp">
+      <Filter>Source Files\DataStructrure</Filter>
+    </ClCompile>
+    <ClCompile Include="RectangleObject.cpp">
+      <Filter>Source Files\DataStructrure</Filter>
+    </ClCompile>
+    <ClCompile Include="EllipseObject.cpp">
+      <Filter>Source Files\DataStructrure</Filter>
+    </ClCompile>
+    <ClCompile Include="TextObject.cpp">
       <Filter>Source Files\DataStructrure</Filter>
     </ClCompile>
   </ItemGroup>

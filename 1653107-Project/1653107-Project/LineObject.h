@@ -4,5 +4,9 @@
 class LineObject : public Object
 {
 public:
-	void draw();
+	LineObject();
+	LineObject(COLORREF);
+	void writeFile(ofstream&);
+	void loadFile(ifstream&);
+	void draw(HWND);
 };

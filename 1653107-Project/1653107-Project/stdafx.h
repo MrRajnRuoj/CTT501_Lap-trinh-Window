@@ -19,6 +19,9 @@
 #include <commdlg.h>
 #include <CommCtrl.h>
 #include <vector>
+#include <fstream>
+#include <locale>
+#include <codecvt>
 
 using namespace std;
 

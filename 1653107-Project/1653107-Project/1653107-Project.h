@@ -1,20 +1,18 @@
 #pragma once
 
 #include "resource.h"
+#include "ChildWindow.h"
+#define MAX_LOADSTRING 100
 
-enum Mode
-{
-	Line = ID_DRAW_LINE,
-	Rectangle = ID_DRAW_RECTANGLE,
-	Ellipse = ID_DRAW_ELLIPSE,
-	Text = ID_DRAW_TEXT,
-	Select = ID_DRAW_SELECTOBJECT
-};
 
 void onCreateChileWnd(int nWnd);
 void onCreateMDIClient(HWND hWnd);
 void onChooseColor(HWND hWnd);
 void onChooseFont(HWND hWnd);
+void onOpenFileSaveDlg(HWND hWnd);
+void onSaveFile(WCHAR* fileName, HWND hWnd);
+void onOpenFileDlg(HWND hWnd);
+void onLoadFile(WCHAR* fileName, HWND hWnd);
 LRESULT CALLBACK MDICloseProc(HWND hWnd, LPARAM lParam);
 void createToolBar(HWND hWnd);
 void addUserButton2Toolbar();

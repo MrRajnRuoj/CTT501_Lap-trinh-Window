@@ -3,9 +3,6 @@
 
 #include "stdafx.h"
 #include "1653107-Project.h"
-#include "ChildWindow.h"
-
-#define MAX_LOADSTRING 100
 
 // Global Variables:
 HINSTANCE hInst;                                // current instance
@@ -16,13 +13,14 @@ HWND hwndMDIClient = NULL;
 HWND hFrameWnd = NULL;
 HWND hToolBarWnd, hCurrWnd;
 vector<ChildWindow*> arrChildWindow;
-Mode curMode = Line;
+int curMode = ID_DRAW_LINE;
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK    ChildWndProc(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK    inputTextDlgProc(HWND, UINT, WPARAM, LPARAM);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -163,10 +161,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			onCreateChileWnd(nWnd);
 			break;
 		case ID_FILE_OPEN:
-			MessageBox(hWnd, L"Bạn đã chọn Open", L"Notice", MB_OK);
+			onOpenFileDlg(hWnd);
 			break;
 		case ID_FILE_SAVE:
-			MessageBox(hWnd, L"Bạn đã chọn Save", L"Notice", MB_OK);
+			onOpenFileSaveDlg(hCurrWnd);
 			break;
 		case ID_FILE_EXIT:
 			DestroyWindow(hWnd);
@@ -186,8 +184,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			HMENU hMenu = GetMenu(hWnd);
 			CheckMenuItem(hMenu, curDrawSel, MF_UNCHECKED | MF_BYCOMMAND);
 			CheckMenuItem(hMenu, wmId, MF_CHECKED | MF_BYCOMMAND);
-			curDrawSel = wmId;
-			curMode = (Mode)wmId;
+			curMode = curDrawSel = wmId;
 			break;
 		}
 		case ID_WINDOW_TIDE:
@@ -242,7 +239,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 // Processes messages for Child Windown
 LRESULT CALLBACK ChildWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	int idx = indexOfHandle(hWnd);
+	static ChildWindow* childWnd = NULL;
 	switch (message)
 	{
 	case WM_CREATE:
@@ -250,12 +247,16 @@ LRESULT CALLBACK ChildWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		break;
 	case WM_MDIACTIVATE:
 		hCurrWnd = hWnd;
+		childWnd = arrChildWindow[indexOfHandle(hWnd)];
 		break;
 	case WM_LBUTTONDOWN:
+		childWnd->onLButtonDown(curMode, hInst, lParam);
 		break;
 	case WM_MOUSEMOVE:
+		childWnd->onMouseMove(curMode, wParam, lParam);
 		break;
 	case WM_LBUTTONUP:
+		childWnd->onLButtonUp(curMode);
 		break;
 	case WM_CLOSE:
 		break;
@@ -267,8 +268,8 @@ LRESULT CALLBACK ChildWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 	{
 		PAINTSTRUCT ps;
 		HDC hdc = BeginPaint(hWnd, &ps);
-		// TODO: Add any drawing code that uses hdc here...
 		EndPaint(hWnd, &ps);
+		childWnd->drawAllObj();
 	}
 	break;
 	}
@@ -339,13 +340,16 @@ void onChooseFont(HWND hWnd) {
 
 	ZeroMemory(&cf, sizeof(CHOOSEFONT));
 	cf.lStructSize = sizeof(CHOOSEFONT);
-	cf.hwndOwner = hWnd;
 	cf.lpLogFont = &lf;
 	cf.Flags = CF_SCREENFONTS | CF_EFFECTS;
 	if (ChooseFont(&cf)) {
 		int idx = indexOfHandle(hCurrWnd);
-		if (idx != -1)
-			arrChildWindow[idx]->setFont(CreateFontIndirect(cf.lpLogFont));
+		if (idx != -1) {
+			//HFONT hFont = CreateFontIndirect(cf.lpLogFont);
+			arrChildWindow[idx]->setLogFont(lf);
+			//arrChildWindow[idx]->setFont(hFont);
+		}
+			
 		else
 			MessageBox(hWnd, L"Cannot find hCurrWnd to set font", L"Error", MB_OK);
 	}
@@ -353,10 +357,78 @@ void onChooseFont(HWND hWnd) {
 		MessageBox(hWnd, L"ChooseFont error!", L"Error", MB_OK);
 }
 
+void onOpenFileSaveDlg(HWND hWnd) {
+	OPENFILENAME ofn; 
+	TCHAR szFile[256];
+	TCHAR szFileTitle[256];
+	TCHAR szFilter[] = L"(*.drw)\0 * .drw\0";
+	szFileTitle[0] = '\0';
+	GetWindowText(hWnd, szFile, 256);
+	szFile[wcslen(szFile) - 4] = '\0';
+	// Khởi tạo struct
+	ZeroMemory(&ofn, sizeof(OPENFILENAME));
+	ofn.lStructSize = sizeof(OPENFILENAME);
+	ofn.hwndOwner = hWnd; 
+	ofn.lpstrFilter = szFilter;
+	ofn.nFilterIndex = 1;
+	ofn.lpstrFile = szFile; // chuỗi tên file trả về
+	ofn.nMaxFile = sizeof(szFile);
+	ofn.lpstrFileTitle = szFileTitle;
+	ofn.nMaxFileTitle = sizeof(szFileTitle);
+	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+	if (GetSaveFileName(&ofn)) {
+		wsprintf(szFileTitle, L"%s.drw", szFileTitle);
+		SetWindowText(hWnd, szFileTitle);
+		onSaveFile(szFileTitle, hWnd);
+	}
+}
+
+void onSaveFile(WCHAR* fileName, HWND hWnd) {
+	int idx = indexOfHandle(hWnd);
+	ofstream file;
+	file.open(fileName, ios::out | ios::binary);
+	arrChildWindow[idx]->writeFile(file);
+	file.close();
+}
+
+void onOpenFileDlg(HWND hWnd) {
+	OPENFILENAME ofn;
+	TCHAR szFile[256];
+	TCHAR szFileTitle[256];
+	TCHAR szFilter[] = L"(*.drw)\0 * .drw\0";
+	szFileTitle[0] = '\0';
+	szFile[0] = '\0';
+	// Khởi tạo struct
+	ZeroMemory(&ofn, sizeof(OPENFILENAME));
+	ofn.lStructSize = sizeof(OPENFILENAME);
+	ofn.hwndOwner = hWnd;
+	ofn.lpstrFilter = szFilter;
+	ofn.nFilterIndex = 1;
+	ofn.lpstrFile = szFile; // chuỗi tên file trả về
+	ofn.nMaxFile = sizeof(szFile);
+	ofn.lpstrFileTitle = szFileTitle;
+	ofn.nMaxFileTitle = sizeof(szFileTitle);
+	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+	if (GetOpenFileName(&ofn)) {
+		SendMessage(hWnd, WM_COMMAND, ID_FILE_NEW, 0);
+		SetWindowText(hCurrWnd, szFileTitle);
+		onLoadFile(szFile, hCurrWnd);
+	}
+}
+
+void onLoadFile(WCHAR * fileName, HWND hWnd) {
+	ifstream file;
+	int idx = indexOfHandle(hWnd);
+	file.open(fileName, ios::in | ios::binary);
+	arrChildWindow[idx]->loadFile(file);
+	file.close();
+}
+
 LRESULT CALLBACK MDICloseProc(HWND hWnd, LPARAM lParam) {
 	SendMessage(hwndMDIClient, WM_MDIDESTROY, (WPARAM)hWnd, 0L);
 	return 1;
 }
+
 
 void createToolBar(HWND hWnd) {
 	// loading Common Control DLL
@@ -417,11 +489,8 @@ void addUserButton2Toolbar() {
 void onInitMDIChild(HWND hWnd) {
 	ChildWindow* wndData;
 	wndData = (ChildWindow*)VirtualAlloc(NULL, sizeof(ChildWindow), MEM_COMMIT, PAGE_READWRITE);
+	wndData->init();
 	wndData->setHandle(hWnd);
-	if (SetWindowLongPtr(hWnd, 0, (LONG_PTR)wndData) == 0) {
-		if (GetLastError() != 0)
-			MessageBox(hWnd, L"Set data error", L"Error", MB_ICONERROR);
-	}
 	arrChildWindow.push_back(wndData);
 }
 
