@@ -26,12 +26,21 @@ public:
 	void loadFile(ifstream&);
 
 private:
+	int checkSelectObject(int x, int y);
+
 	HWND hWnd;
 	LOGFONT logFont;
 	COLORREF color;
 	HDC hdc;
 	Object* objTmp;
 	vector<Object*> arrObj;
+	bool mouseDownOnObj;
+	int idxLastSelectedObj;
+	bool changeMouse;
+	bool isResizing;
+	int currCursor;
+	Point pBeforeMove;
+	HCURSOR hCursor[6];
 };
 
 INT_PTR CALLBACK inputTextDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);

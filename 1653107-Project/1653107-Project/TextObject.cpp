@@ -28,14 +28,19 @@ TextObject::~TextObject()
 	delete[] this->text;
 }
 
-void TextObject::draw(HWND hWnd)
+void TextObject::draw(HDC hdc)
 {
-	HDC hdc = GetDC(hWnd);
 	HFONT hFont = CreateFontIndirect(&logFont);
 	SelectObject(hdc, hFont);
 	SetTextColor(hdc, color);
 	TextOut(hdc, lftTp.x, lftTp.y, text, wcslen(text));
-	ReleaseDC(hWnd, hdc);
+}
+
+bool TextObject::pointInObj(int x, int y)
+{
+	if (y >= lftTp.y && y <= rghtBttn.y && x >= lftTp.x && x <= rghtBttn.x)
+		return true;
+	return false;
 }
 
 void TextObject::writeFile(ofstream &file)

@@ -161,7 +161,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			onCreateChileWnd(nWnd);
 			break;
 		case ID_FILE_OPEN:
-			onOpenFileDlg(hWnd);
+			onOpenFileDlg(hCurrWnd);
 			break;
 		case ID_FILE_SAVE:
 			onOpenFileSaveDlg(hCurrWnd);

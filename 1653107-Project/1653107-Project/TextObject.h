@@ -8,7 +8,8 @@ public:
 	TextObject();
 	TextObject(const TextObject&);
 	~TextObject();
-	void draw(HWND);
+	void draw(HDC);
+	bool pointInObj(int x, int y);
 	void writeFile(ofstream&);
 	void loadFile(ifstream&);
 	WCHAR *text;
