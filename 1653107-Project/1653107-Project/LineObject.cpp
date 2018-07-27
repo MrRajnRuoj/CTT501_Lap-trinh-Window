@@ -10,6 +10,10 @@ LineObject::LineObject(COLORREF color) : Object(color)
 	this->type = 1;
 }
 
+LineObject::LineObject(ClipboardObject *clipObj) : Object(clipObj)
+{
+}
+
 bool LineObject::pointInObj(int mouseX, int mouseY)
 {
 	float slope, intercept, epsilon;
@@ -143,4 +147,9 @@ void LineObject::draw(HDC hdc)
 	LineTo(hdc, this->rghtBttn.x, this->rghtBttn.y);
 	SelectObject(hdc, hOldPen);
 	DeleteObject(hPen);
+}
+
+ClipboardObject * LineObject::pack2ClipboardObj()
+{
+	return Object::pack2ClipboardObj();
 }

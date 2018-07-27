@@ -8,6 +8,7 @@
 #include "TextObject.h"
 #include "Resource.h"
 
+
 class ChildWindow
 {
 public:
@@ -24,10 +25,13 @@ public:
 	void drawAllObj();
 	void writeFile(ofstream&);
 	void loadFile(ifstream&);
+	void deleteCurrSelObj();
+	void copyObj2Clipboard();
+	void pasteObject();
 
 private:
 	int checkSelectObject(int x, int y);
-
+	void deleteObject(int idx);
 	HWND hWnd;
 	LOGFONT logFont;
 	COLORREF color;

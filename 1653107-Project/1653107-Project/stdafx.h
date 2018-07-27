@@ -22,6 +22,8 @@
 #include <fstream>
 #include <locale>
 #include <codecvt>
+#include <cstdlib>
+#include <ctime>
 
 using namespace std;
 

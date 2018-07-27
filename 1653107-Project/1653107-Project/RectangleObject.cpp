@@ -7,6 +7,10 @@ RectangleObject::RectangleObject(COLORREF color) : Object(color)
 	this->type = 2;
 }
 
+RectangleObject::RectangleObject(ClipboardObject *clipObj) : Object(clipObj)
+{
+}
+
 RectangleObject::RectangleObject()
 {
 }
@@ -56,6 +60,11 @@ void RectangleObject::writeFile(ofstream &file)
 void RectangleObject::loadFile(ifstream &file)
 {
 	Object::loadFile(file);
+}
+
+ClipboardObject * RectangleObject::pack2ClipboardObj()
+{
+	return Object::pack2ClipboardObj();
 }
 
 

@@ -7,6 +7,10 @@ EllipseObject::EllipseObject(COLORREF color) : Object(color)
 	this->type = 3;
 }
 
+EllipseObject::EllipseObject(ClipboardObject *clipObj) : Object(clipObj)
+{
+}
+
 EllipseObject::EllipseObject()
 {
 }
@@ -59,5 +63,10 @@ void EllipseObject::writeFile(ofstream &file)
 void EllipseObject::loadFile(ifstream &file)
 {
 	Object::loadFile(file);
+}
+
+ClipboardObject * EllipseObject::pack2ClipboardObj()
+{
+	return Object::pack2ClipboardObj();
 }
 

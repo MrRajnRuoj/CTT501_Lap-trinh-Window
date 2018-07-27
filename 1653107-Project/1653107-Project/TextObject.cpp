@@ -7,9 +7,17 @@ TextObject::TextObject(LOGFONT logFont, COLORREF color) : Object(logFont, color)
 	this->type = 4;
 }
 
+TextObject::TextObject(ClipboardObject *clipObj) : Object(clipObj)
+{
+	this->text = new WCHAR[wcslen(clipObj->text) + 1];
+	wcscpy(this->text, clipObj->text);
+}
+
 TextObject::TextObject()
 {
 	this->type = 4;
+	memset(&this->color, 0, sizeof(COLORREF));
+	memset(&this->logFont, 0, sizeof(LOGFONT));
 }
 
 TextObject::TextObject(const TextObject &tmpObj)
@@ -30,9 +38,12 @@ TextObject::~TextObject()
 
 void TextObject::draw(HDC hdc)
 {
-	HFONT hFont = CreateFontIndirect(&logFont);
-	SelectObject(hdc, hFont);
-	SetTextColor(hdc, color);
+	if (logFont.lfHeight != 0) {
+		HFONT hFont = CreateFontIndirect(&logFont);
+		SelectObject(hdc, hFont);
+	}
+	if (color != 0)
+		SetTextColor(hdc, color);
 	TextOut(hdc, lftTp.x, lftTp.y, text, wcslen(text));
 }
 
@@ -62,5 +73,12 @@ void TextObject::loadFile(ifstream &file)
 	file.read(str, length);
 	str[length] = '\0';
 	mbstowcs(this->text, str, length + 1);
+}
+
+ClipboardObject * TextObject::pack2ClipboardObj()
+{
+	ClipboardObject* clipObj = Object::pack2ClipboardObj();
+	wcscpy(clipObj->text, this->text);
+	return clipObj;
 }
 

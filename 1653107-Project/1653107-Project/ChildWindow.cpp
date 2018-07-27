@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "ChildWindow.h"
+#define szClipboardObj	L"1653107CLIPBOARDOBJ"
 
 ChildWindow::ChildWindow() {
 }
@@ -91,7 +92,7 @@ void ChildWindow::onLButtonDown(int mode, HINSTANCE hInst, LPARAM lParam) {
 			int idx = checkSelectObject(LOWORD(lParam), HIWORD(lParam));
 			if (idx != -1 && mouseDownOnObj == false)
 				mouseDownOnObj = true;
-			else if (idx == -1 && mouseDownOnObj == true) {
+			else if (idx == -1 && mouseDownOnObj == true && idxLastSelectedObj != -1) {
 				arrObj[idxLastSelectedObj]->paintSelectedObj(hdc);
 				mouseDownOnObj = false;
 				idxLastSelectedObj = -1;
@@ -300,6 +301,23 @@ int ChildWindow::checkSelectObject(int x, int y) {
 	return -1;
 }
 
+void ChildWindow::deleteObject(int idx) {
+	vector<Object*> tmp;
+	for (int i = arrObj.size() - 1; i >= 0; --i) {
+		if (i != idx) {
+			tmp.push_back(arrObj[i]);
+			arrObj.pop_back();
+		}
+		else {
+			delete arrObj[i];
+			arrObj.pop_back();
+			break;
+		}
+	}
+	for (int i = 0; i < tmp.size(); ++i)
+		arrObj.push_back(tmp[i]);
+}
+
 
 void ChildWindow::writeFile(ofstream &file) {
 	file.write((char*)&this->color, sizeof(COLORREF));
@@ -337,6 +355,91 @@ void ChildWindow::loadFile(ifstream &file) {
 		objTmp->loadFile(file);
 		objTmp->draw(hdc);
 		arrObj.push_back(objTmp);
+	}
+}
+
+void ChildWindow::deleteCurrSelObj() {
+	if (idxLastSelectedObj == -1)
+		return;
+	deleteObject(idxLastSelectedObj);
+	idxLastSelectedObj = -1;
+	mouseDownOnObj = false;
+	InvalidateRect(hWnd, NULL, true);
+}
+
+void ChildWindow::copyObj2Clipboard() {
+	if (idxLastSelectedObj == -1) return;
+	ClipboardObject* clipObj = arrObj[idxLastSelectedObj]->pack2ClipboardObj();
+
+	UINT nID = RegisterClipboardFormat(szClipboardObj);
+	HGLOBAL hGlobal = GlobalAlloc(GHND, sizeof(ClipboardObject));
+	ClipboardObject* pGlobalClipObj = (ClipboardObject*)GlobalLock(hGlobal);
+	CopyMemory(pGlobalClipObj, clipObj, sizeof(ClipboardObject));
+	GlobalUnlock(hGlobal);
+
+	if (OpenClipboard(hWnd)) {
+		EmptyClipboard();
+		SetClipboardData(nID, hGlobal);
+		CloseClipboard();
+	}
+	delete clipObj;
+}
+
+void ChildWindow::pasteObject() {
+	if (OpenClipboard(hWnd)) {
+		int nID = RegisterClipboardFormat(szClipboardObj);
+		HGLOBAL hGlobal = GetClipboardData(nID);
+		if (hGlobal) {
+			ClipboardObject* globalClipObj = (ClipboardObject*)GlobalLock(hGlobal);
+			ClipboardObject clipObj;
+			CopyMemory(&clipObj, globalClipObj, sizeof(ClipboardObject));
+			GlobalUnlock(hGlobal);
+			Object* tmp;
+			switch (clipObj.type)
+			{
+			case 1:
+				tmp = new LineObject(&clipObj);
+				break;
+			case 2:
+				tmp = new RectangleObject(&clipObj);
+				break;
+			case 3:
+				tmp = new EllipseObject(&clipObj);
+				break;
+			case 4:
+				tmp = new TextObject(&clipObj);
+				break;
+			default:
+				break;
+			}
+			arrObj.push_back(tmp);
+			tmp->draw(hdc);
+		}
+		else {
+			hGlobal = GetClipboardData(CF_TEXT);
+			if (hGlobal) {
+				char* cText = (char*)GlobalLock(hGlobal);
+				GlobalUnlock(hGlobal);
+				TextObject tmp;
+				RECT r;
+				SIZE sz;
+				GetWindowRect(hWnd, &r);
+				srand(time(NULL));
+				tmp.text = new WCHAR[strlen(cText) + 1];
+				mbstowcs(tmp.text, cText, strlen(cText));
+				tmp.text[strlen(cText)] = '\0';
+				tmp.lftTp.x = rand() % (r.right - r.left + 1) + r.left;
+				tmp.lftTp.y = rand() % (r.bottom - r.top + 1) + r.top;
+				GetTextExtentPoint32(hdc, tmp.text, wcslen(tmp.text), &sz);
+				tmp.rghtBttn.x = tmp.lftTp.x + sz.cx;
+				tmp.rghtBttn.y = tmp.lftTp.y + sz.cy;
+				Object* tmpObj = new TextObject(tmp);
+				arrObj.push_back(tmpObj);
+				tmpObj->draw(hdc);
+			}
+		}
+
+		CloseClipboard();
 	}
 }
 

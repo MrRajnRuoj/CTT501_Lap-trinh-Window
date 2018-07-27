@@ -169,6 +169,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case ID_FILE_EXIT:
 			DestroyWindow(hWnd);
 			break;
+		case ID_EDIT_CUT:
+			cutSelectedObj(hCurrWnd);
+			break;
+		case ID_EDIT_COPY:
+			copyObj2Clipboard(hCurrWnd);
+			break;
+		case ID_EDIT_PASTE:
+			pasteObj(hCurrWnd);
+			break;
+		case ID_EDIT_DELETE:
+			onDeleteObject(hCurrWnd);
+			break;
 		case ID_DRAW_COLOR:
 			onChooseColor(hWnd);
 			break; 
@@ -438,7 +450,12 @@ void createToolBar(HWND hWnd) {
 	{
 		{ STD_FILENEW,	ID_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
 		{ STD_FILEOPEN,	ID_FILE_OPEN, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-		{ STD_FILESAVE,	ID_FILE_SAVE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 }
+		{ STD_FILESAVE,	ID_FILE_SAVE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
+		{ 0, 0,	TBSTATE_ENABLED, TBSTYLE_SEP, 0, 0 },
+		{ STD_CUT,	ID_EDIT_CUT, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
+		{ STD_COPY,	ID_EDIT_COPY, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
+		{ STD_PASTE, ID_EDIT_PASTE,	TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
+		{ STD_DELETE,ID_EDIT_DELETE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 }
 	};
 
 	// create a toolbar
@@ -500,4 +517,37 @@ int indexOfHandle(HWND hWnd) {
 			return i;
 	}
 	return -1;
+}
+
+void onDeleteObject(HWND hCurrWnd)
+{
+	int idx = indexOfHandle(hCurrWnd);
+	if (idx == -1)
+		return;
+	arrChildWindow[idx]->deleteCurrSelObj();
+}
+
+void copyObj2Clipboard(HWND hCurrWnd)
+{
+	int idx = indexOfHandle(hCurrWnd);
+	if (idx == -1)
+		return;
+	arrChildWindow[idx]->copyObj2Clipboard();
+}
+
+void cutSelectedObj(HWND hCurrWnd)
+{
+	int idx = indexOfHandle(hCurrWnd);
+	if (idx == -1)
+		return;
+	arrChildWindow[idx]->copyObj2Clipboard();
+	arrChildWindow[idx]->deleteCurrSelObj();
+}
+
+void pasteObj(HWND hCurrWnd)
+{
+	int idx = indexOfHandle(hCurrWnd);
+	if (idx == -1)
+		return;
+	arrChildWindow[idx]->pasteObject();
 }

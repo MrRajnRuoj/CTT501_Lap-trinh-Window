@@ -12,6 +12,15 @@ Object::Object(LOGFONT logFont, COLORREF color)
 	this->color = color;
 }
 
+Object::Object(ClipboardObject *clipObj)
+{
+	this->type = clipObj->type;
+	this->color = clipObj->color;
+	this->logFont = clipObj->logFont;
+	this->lftTp = clipObj->lftTp;
+	this->rghtBttn = clipObj->rghtBttn;
+}
+
 Object::Object()
 {
 }
@@ -107,4 +116,15 @@ void Object::loadFile(ifstream &file)
 	file.read((char*)&this->logFont, sizeof(this->logFont));
 	file.read((char*)&this->lftTp, sizeof(this->lftTp));
 	file.read((char*)&this->rghtBttn, sizeof(this->rghtBttn));
+}
+
+ClipboardObject * Object::pack2ClipboardObj()
+{
+	ClipboardObject* clipObj = new ClipboardObject();
+	clipObj->type = this->type;
+	clipObj->color = this->color;
+	clipObj->logFont = this->logFont;
+	clipObj->lftTp = this->lftTp;
+	clipObj->rghtBttn = this->rghtBttn;
+	return clipObj;
 }

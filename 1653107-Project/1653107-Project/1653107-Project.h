@@ -18,3 +18,7 @@ void createToolBar(HWND hWnd);
 void addUserButton2Toolbar();
 void onInitMDIChild(HWND hWnd);
 int indexOfHandle(HWND hWnd);
+void onDeleteObject(HWND hCurrWnd);
+void copyObj2Clipboard(HWND hCurrWnd);
+void cutSelectedObj(HWND hCurrWnd);
+void pasteObj(HWND hCurrWnd);
