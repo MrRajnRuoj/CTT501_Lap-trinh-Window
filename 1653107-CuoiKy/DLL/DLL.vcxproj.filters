@@ -13,12 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\Data Structure">
-      <UniqueIdentifier>{265eccc2-aa3d-47d2-b043-79d2ea8ebc33}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Data Structure">
-      <UniqueIdentifier>{79bacb73-fe7d-4687-b4d2-2c2c8efeb8c3}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -30,49 +24,37 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Resource.h">
+    <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="1653107-CuoiKy.h">
+    <ClInclude Include="DLL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Province.h">
-      <Filter>Header Files\Data Structure</Filter>
-    </ClInclude>
-    <ClInclude Include="MapObject.h">
-      <Filter>Header Files\Data Structure</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="1653107-CuoiKy.cpp">
+    <ClCompile Include="DLL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Province.cpp">
-      <Filter>Source Files\Data Structure</Filter>
-    </ClCompile>
-    <ClCompile Include="MapObject.cpp">
-      <Filter>Source Files\Data Structure</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="1653107-CuoiKy.rc">
+    <ResourceCompile Include="DLL.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="small.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="1653107-CuoiKy.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="dancu.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="map.bmp">
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="sanpham.bmp">
@@ -80,8 +62,8 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="DLL.lib">
+    <None Include="Source.def">
       <Filter>Source Files</Filter>
-    </Library>
+    </None>
   </ItemGroup>
 </Project>

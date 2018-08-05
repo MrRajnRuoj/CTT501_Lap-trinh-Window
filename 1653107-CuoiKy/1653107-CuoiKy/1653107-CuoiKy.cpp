@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "1653107-CuoiKy.h"
+#include "MapObject.h"
 
 #define MAX_LOADSTRING 100
 
@@ -11,11 +12,18 @@ HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 
+MapObject mapInst;
+HBITMAP hBmpMap = NULL;
+BITMAP bmpMapObj;
+
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+
+void initData(HWND hWnd);
+void drawMap(HWND hWnd);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -123,8 +131,12 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	static int count = 0;
     switch (message)
     {
+	case WM_CREATE:
+		initData(hWnd);
+		break;
     case WM_COMMAND:
         {
             int wmId = LOWORD(wParam);
@@ -142,12 +154,30 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
         }
         break;
+	case WM_LBUTTONDOWN:
+	{
+		int x = LOWORD(lParam);
+		int y = HIWORD(lParam);
+		/*WCHAR str[256];
+		wsprintf(str, L"%d: X = %d, Y = %d\n", count++ % 6 + 1, x, y);
+		OutputDebugString(str);*/
+		mapInst.inputPopulationData(x, y);
+	}
+		break;
+	case WM_RBUTTONDOWN:
+	{
+		int x = LOWORD(lParam);
+		int y = HIWORD(lParam);
+		mapInst.inputProductData(x, y);
+	}
+	break;
     case WM_PAINT:
         {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
             // TODO: Add any drawing code that uses hdc here...
             EndPaint(hWnd, &ps);
+			drawMap(hWnd);
         }
         break;
     case WM_DESTROY:
@@ -177,4 +207,23 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     }
     return (INT_PTR)FALSE;
+}
+
+void initData(HWND hWnd) {
+	hBmpMap = (HBITMAP)LoadImage(hInst, L"map.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	GetObject(hBmpMap, sizeof(BITMAP), &bmpMapObj);
+	MoveWindow(hWnd, 500, 0, bmpMapObj.bmWidth + 20, bmpMapObj.bmHeight + 60, true);
+	mapInst.importData();
+	mapInst.setHandle(hWnd);
+}
+
+void drawMap(HWND hWnd) {
+	HDC hdc = GetDC(hWnd);
+	HDC memDC = CreateCompatibleDC(hdc);
+
+	SelectObject(memDC, hBmpMap);
+	BitBlt(hdc, 0, 0, bmpMapObj.bmWidth, bmpMapObj.bmHeight, memDC, 0, 0, SRCCOPY);
+
+	DeleteDC(memDC);
+	ReleaseDC(hWnd, hdc);
 }
