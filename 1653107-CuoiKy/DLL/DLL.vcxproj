@@ -178,9 +178,6 @@
     <Image Include="dancu.bmp" />
     <Image Include="sanpham.bmp" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Source.def" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

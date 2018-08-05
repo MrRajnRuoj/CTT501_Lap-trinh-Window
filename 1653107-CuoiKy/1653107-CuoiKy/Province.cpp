@@ -7,6 +7,16 @@ Province::Province()
 	this->population = 0;
 	this->area = 0;
 	this->populationDensity = 0;
+	this->economicType = -1;
+	Product pr1, pr2;
+	wsprintf(pr1.name, L"");
+	pr1.quantity = 0;
+	wsprintf(pr2.name, L"");
+	pr2.quantity = 0;
+	this->listProduct.push_back(pr1);
+	this->listProduct.push_back(pr2);
+	this->flagEICon = false;
+	this->flagPICon = false;
 }
 
 Province::Province(string strName, POINT *arrPoint)
@@ -17,6 +27,16 @@ Province::Province(string strName, POINT *arrPoint)
 	this->population = 0;
 	this->area = 0;
 	this->populationDensity = 0;
+	this->economicType = -1;
+	Product pr1, pr2;
+	wsprintf(pr1.name, L"");
+	pr1.quantity = 0;
+	wsprintf(pr2.name, L"");
+	pr2.quantity = 0;
+	this->listProduct.push_back(pr1);
+	this->listProduct.push_back(pr2);
+	this->flagEICon = false;
+	this->flagPICon = false;
 }
 
 
@@ -36,9 +56,4 @@ bool Province::checkProvincePosition(int x, int y)
 			check = !check;
 	}
 	return check;
-}
-
-string Province::getName()
-{
-	return this->provinceName;
 }

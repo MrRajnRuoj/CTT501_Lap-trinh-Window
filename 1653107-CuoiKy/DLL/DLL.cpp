@@ -12,16 +12,37 @@ Province* glbProvince = NULL;
 
 
 EXPORTS void inputPopulation(HWND hWnd, HGLOBAL hGlobalProvince, int x, int y) {
-	BOOL* isSuccess;
+	BOOL* isSuccess = NULL;
 
 	glbProvince = (Province*)GlobalLock(hGlobalProvince);
-	if (glbProvince != NULL) 
+	if (glbProvince != NULL) {
 		isSuccess = (BOOL*)DialogBox(hinstLib, MAKEINTRESOURCE(IDD_INPUTPOPULATION), hWnd, inputPopulationDlgProc);
+		if (*isSuccess) {
+			glbProvince->pICon.x = x;
+			glbProvince->pICon.y = y;
+			InvalidateRect(hWnd, NULL, true);
+		}
+	}
+		
+	GlobalUnlock(hGlobalProvince);
+	delete isSuccess;
+}
 
-	if (*isSuccess)
-		addPopulationIcon(hWnd, x, y);
+EXPORTS void inputProduct(HWND hWnd, HGLOBAL hGlobalProvince, int x, int y) {
+	BOOL* isSuccess = NULL;
+
+	glbProvince = (Province*)GlobalLock(hGlobalProvince);
+	if (glbProvince != NULL) {
+		isSuccess = (BOOL*)DialogBox(hinstLib, MAKEINTRESOURCE(IDD_INPUTPRODUCT), hWnd, inputProductDlgProc);
+		if (*isSuccess) {
+			glbProvince->eICon.x = x;
+			glbProvince->eICon.y = y;
+			InvalidateRect(hWnd, NULL, true);
+		}
+	}
 
 	GlobalUnlock(hGlobalProvince);
+	delete isSuccess;
 }
 
 INT_PTR CALLBACK inputPopulationDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
@@ -52,12 +73,20 @@ INT_PTR CALLBACK inputPopulationDlgProc(HWND hDlg, UINT message, WPARAM wParam, 
 				glbProvince->population = population;
 				glbProvince->area = area;
 				glbProvince->populationDensity = ppDensity;
+				glbProvince->flagPICon = true;
 				EndDialog(hDlg, (INT_PTR)isSuccess);
 			}
 		}
 			break;
 		case IDC_BUTTON_DELETEDATA:
-
+			if (MessageBox(hDlg, L"Bạn có thực sự muốn xóa thông tin dân cư của tỉnh?", L"Xác nhận", MB_YESNO) == IDYES) {
+				BOOL* isSuccess = new BOOL(TRUE);
+				glbProvince->population = 0;
+				glbProvince->area = 0;
+				glbProvince->populationDensity = 0;
+				glbProvince->flagPICon = false;
+				EndDialog(hDlg, (INT_PTR)isSuccess);
+			}
 			break;
 		default:
 			break;
@@ -76,15 +105,79 @@ INT_PTR CALLBACK inputPopulationDlgProc(HWND hDlg, UINT message, WPARAM wParam, 
 	return (INT_PTR)FALSE;
 }
 
-void addPopulationIcon(HWND hWnd, int x, int y) {
-	HDC hdc = GetDC(hWnd);
-	HDC memDC = CreateCompatibleDC(hdc);
-	BITMAP bmpIcon;
-	HBITMAP hBmpIcon = (HBITMAP)LoadImage(hinstLib, L"dancu.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+INT_PTR CALLBACK inputProductDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
+	switch (message)
+	{
+	case WM_INITDIALOG:
+		SendMessage(GetDlgItem(hDlg, IDC_CB_ECONOMICTYPE), CB_ADDSTRING, 0, (LPARAM)L"Nông nghiệp");
+		SendMessage(GetDlgItem(hDlg, IDC_CB_ECONOMICTYPE), CB_ADDSTRING, 0, (LPARAM)L"Dịch vụ");
+		SendMessage(GetDlgItem(hDlg, IDC_CB_ECONOMICTYPE), CB_ADDSTRING, 0, (LPARAM)L"Du lịch");
+		SendMessage(GetDlgItem(hDlg, IDC_CB_ECONOMICTYPE), CB_ADDSTRING, 0, (LPARAM)L"Công nghiệp");
+		if (glbProvince->economicType != -1)
+			SendMessage(GetDlgItem(hDlg, IDC_CB_ECONOMICTYPE), CB_SETCURSEL, glbProvince->economicType, 0);
+		else
+			SendMessage(GetDlgItem(hDlg, IDC_CB_ECONOMICTYPE), CB_SETCURSEL, 0, 0);
+		SetDlgItemText(hDlg, IDC_EDIT_PRODUCT1, glbProvince->listProduct[0].name);
+		SetDlgItemInt(hDlg, IDC_EDIT_QUANTITYPRODUCT1, glbProvince->listProduct[0].quantity, false);
+		SetDlgItemText(hDlg, IDC_EDIT_PRODUCT2, glbProvince->listProduct[1].name);
+		SetDlgItemInt(hDlg, IDC_EDIT_QUANTITYPRODUCT2, glbProvince->listProduct[1].quantity, false);
+		SetFocus(GetDlgItem(hDlg, IDC_EDIT_PRODUCT1));
+		return (INT_PTR)FALSE;
+	case WM_COMMAND:
+	{
+		int wmID = LOWORD(wParam);
+		switch (wmID)
+		{
+		case IDC_BTN_DONE:
+		{
+			BOOL isQ1Valid, isQ2Valid;
+			WCHAR product1[256], product2[256];
+			int quantity1, quantity2;
 
-	GetObject(hBmpIcon, sizeof(BITMAP), &bmpIcon);
-	SelectObject(memDC, hBmpIcon);
-	StretchBlt(hdc, x - bmpIcon.bmWidth / 4, y - bmpIcon.bmHeight / 2, bmpIcon.bmWidth / 2, bmpIcon.bmHeight / 2, memDC, 0, 0, bmpIcon.bmWidth, bmpIcon.bmHeight, SRCCOPY);
-	DeleteDC(memDC);
-	ReleaseDC(hWnd, hdc);
+			int eTypeSel = SendMessage(GetDlgItem(hDlg, IDC_CB_ECONOMICTYPE), CB_GETCURSEL, 0, 0);
+			GetDlgItemText(hDlg, IDC_EDIT_PRODUCT1, product1, 256);
+			quantity1 = GetDlgItemInt(hDlg, IDC_EDIT_QUANTITYPRODUCT1, &isQ1Valid, true);
+			GetDlgItemText(hDlg, IDC_EDIT_PRODUCT2, product2, 256);
+			quantity2 = GetDlgItemInt(hDlg, IDC_EDIT_QUANTITYPRODUCT2, &isQ2Valid, true);
+			if (!isQ1Valid || !isQ2Valid)
+				MessageBox(hDlg, L"Dữ liệu nhập không hợp lệ!", L"Lỗi", MB_OK);
+			else {
+				BOOL* isSuccess = new BOOL(TRUE);
+				glbProvince->economicType = eTypeSel;
+				wcscpy(glbProvince->listProduct[0].name, product1);
+				glbProvince->listProduct[0].quantity = quantity1;
+				wcscpy(glbProvince->listProduct[1].name, product2);
+				glbProvince->listProduct[1].quantity = quantity2;
+				glbProvince->flagEICon = true;
+				EndDialog(hDlg, (INT_PTR)isSuccess);
+			}
+		}
+		break;
+		case IDC_BTN_DELETEDATA:
+			if (MessageBox(hDlg, L"Bạn có thực sự muốn xóa thông tin sản phẩm của tỉnh?", L"Xác nhận", MB_YESNO) == IDYES) {
+				BOOL* isSuccess = new BOOL(TRUE);
+				glbProvince->economicType = -1;
+				wsprintf(glbProvince->listProduct[0].name, L"");
+				glbProvince->listProduct[0].quantity = 0;
+				wsprintf(glbProvince->listProduct[1].name, L"");
+				glbProvince->listProduct[1].quantity = 0;
+				glbProvince->flagEICon = false;
+				EndDialog(hDlg, (INT_PTR)isSuccess);
+			}
+			break;
+		default:
+			break;
+		}
+		return (INT_PTR)TRUE;
+	}
+	case WM_CLOSE:
+	{
+		BOOL* isSuccess = new BOOL(FALSE);
+		EndDialog(hDlg, (INT_PTR)isSuccess);
+	}
+	break;
+	default:
+		break;
+	}
+	return (INT_PTR)FALSE;
 }

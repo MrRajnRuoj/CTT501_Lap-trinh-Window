@@ -10,6 +10,7 @@ public:
 	void setHandle(HWND);
 	void inputPopulationData(int x, int y);
 	void inputProductData(int x, int y);
+	void drawICon();
 
 private:
 	int getIdxOfProvince(int x, int y);

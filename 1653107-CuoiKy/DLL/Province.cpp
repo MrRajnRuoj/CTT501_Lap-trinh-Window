@@ -31,8 +31,3 @@ bool Province::checkProvincePosition(int x, int y)
 	}
 	return check;
 }
-
-string Province::getName()
-{
-	return this->provinceName;
-}

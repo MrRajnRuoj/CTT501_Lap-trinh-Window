@@ -5,4 +5,4 @@
 
 
 INT_PTR CALLBACK    inputPopulationDlgProc(HWND, UINT, WPARAM, LPARAM);
-void addPopulationIcon(HWND hWnd, int x, int y);
+INT_PTR CALLBACK    inputProductDlgProc(HWND, UINT, WPARAM, LPARAM);

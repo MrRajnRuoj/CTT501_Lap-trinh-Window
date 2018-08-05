@@ -158,9 +158,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		int x = LOWORD(lParam);
 		int y = HIWORD(lParam);
-		/*WCHAR str[256];
-		wsprintf(str, L"%d: X = %d, Y = %d\n", count++ % 6 + 1, x, y);
-		OutputDebugString(str);*/
 		mapInst.inputPopulationData(x, y);
 	}
 		break;
@@ -178,6 +175,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             // TODO: Add any drawing code that uses hdc here...
             EndPaint(hWnd, &ps);
 			drawMap(hWnd);
+			mapInst.drawICon();
         }
         break;
     case WM_DESTROY:
