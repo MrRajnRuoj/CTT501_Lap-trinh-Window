@@ -21,6 +21,7 @@ public:
 	vector<Product> listProduct;
 	POINT pICon, eICon;
 	bool flagPICon, flagEICon;
+	void writeFile(wofstream&);
 
 private:
 	string provinceName;

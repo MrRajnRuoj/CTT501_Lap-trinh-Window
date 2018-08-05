@@ -11,6 +11,7 @@ public:
 	void inputPopulationData(int x, int y);
 	void inputProductData(int x, int y);
 	void drawICon();
+	void writeFile();
 
 private:
 	int getIdxOfProvince(int x, int y);

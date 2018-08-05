@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "Province.h"
 
 
@@ -56,4 +56,36 @@ bool Province::checkProvincePosition(int x, int y)
 			check = !check;
 	}
 	return check;
+}
+
+void Province::writeFile(wofstream &fOut)
+{
+	wstring wstr = wstring(provinceName.begin(), provinceName.end());
+	fOut << wstr.c_str() << endl;
+	fOut << L"Dân cư:" << endl;
+	fOut << L"Diện tích: " << area << L" km2" << endl;
+	fOut << L"Dân số: " << population << endl;
+	fOut << L"Mật độ dân số: " << populationDensity << L" người/km2" << endl;
+	fOut << L"Sản phẩm:" << endl;
+	fOut << L"Loại hình kinh tế: ";
+	switch (economicType)
+	{
+	case 1:
+		fOut << L"Nông nghiệp";
+		break;
+	case 2:
+		fOut << L"Dịch vụ";
+		break;
+	case 3:
+		fOut << L"Du lịch";
+		break;
+	case 4:
+		fOut << L"Công nghiệp";
+		break;
+	}
+	fOut << endl;
+	fOut << L"Sản phẩm: " << listProduct[0].name << endl;
+	fOut << L"Số lượng: " << listProduct[0].quantity << endl;
+	fOut << L"Sản phẩm: " << listProduct[1].name << endl;
+	fOut << L"Số lượng: " << listProduct[1].quantity << endl << endl;
 }

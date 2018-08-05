@@ -2,6 +2,8 @@
 #include "MapObject.h"
 
 #define INPUT_FILE	"map.txt"
+#define OUTPUT_FILE "result.txt"
+
 #define IMPORT __declspec(dllimport)
 
 IMPORT void inputPopulation(HWND hWnd, HGLOBAL hGlobalProvince, int x, int y);
@@ -117,6 +119,19 @@ void MapObject::drawICon()
 	DeleteObject(hBmpEIcon);
 	DeleteObject(hBmpPIcon);
 	ReleaseDC(hWnd, hdc);
+}
+
+void MapObject::writeFile()
+{
+	const std::locale utf8_locale = std::locale(std::locale(), new std::codecvt_utf8<wchar_t>());
+	std::wofstream fOut;
+	fOut.open(OUTPUT_FILE, std::ios::out);
+	fOut.imbue(utf8_locale);
+
+	for (int i = 0; i < listProvinces.size(); ++i)
+		listProvinces[i].writeFile(fOut);
+
+	fOut.close();
 }
 
 int MapObject::getIdxOfProvince(int x, int y)
